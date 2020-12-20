@@ -19,6 +19,11 @@ public class playerManager : MonoBehaviour
     public GameObject winMenu;
     public GameObject loseMenu;
 
+    private List<Collectable> inventory = new List<Collectable>();
+    public Text inventoryText;
+    public Text descriptionText;
+    private int currentIndex;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -46,6 +51,32 @@ public class playerManager : MonoBehaviour
         if (health <= 0)
         {
             LoseGame();
+        }
+
+        if (inventory.Count == 0) //if the inventory is empty
+        {
+            inventoryText.text = "Current Selection: None";
+            descriptionText.text = "";
+        
+        }
+        else //if inventory is NOT empty
+        {
+            inventoryText.text = "Current Selection: " + inventory[currentIndex].collectableName + " " + (currentIndex + 1).ToString();
+            descriptionText.text = "Press [E] to " + inventory[currentIndex].description;
+        }
+
+        if (inventory.Count > 0)
+        {
+            if (Input.GetKeyDown(KeyCode.E))
+            {
+                inventory[currentIndex].Use();
+                inventory.RemoveAt(currentIndex);
+
+                if (inventory.Count != 0)
+                {
+                    currentIndex = (currentIndex - 1) % inventory.Count;
+                }
+            }
         }
     }
 
@@ -116,4 +147,16 @@ public class playerManager : MonoBehaviour
         score += value;
     }
 
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        Collectable item = collision.GetComponent<Collectable>();
+        if (item != null)
+        {
+            item.player = this.gameObject;
+            item.transform.parent = null;
+            inventory.Add(item);
+            item.gameObject.SetActive(false);
+        }
+    }
+    
 }
